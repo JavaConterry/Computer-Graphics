@@ -61,7 +61,7 @@ cosfi = m.cos(fi)
 sinfi = m.sin(fi)
 
 R_z = np.array([[cosfi, -sinfi,  0, 0],
-                [sinfi, cosfi, 0, 0],
+                [sinfi, cosfi, 0, 0],    
                 [0,         0,  1, 0],
                 [0,         0,  0, 1]])
 
