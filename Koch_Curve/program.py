@@ -1,6 +1,9 @@
 import turtle as tt
 from tkinter import *
 
+
+COLORS = [(i,i,i) for i in range(0, 250, 10)]
+
 class Rule:
     def __init__(self, base, rule):
         self.base = base
@@ -33,8 +36,9 @@ class Fractal:
                     new_axiom = new_axiom+a
             self.axiom = new_axiom
 
-    def paint(self):
-        tt.clearscreen()
+    def paint(self, length):
+        tt.setpos(20, 20)
+        tt.setheading(90)
         tt.tracer(False)
         tt.speed(0); tt.delay(0)
         expl = {'F': f'tt.forward({length})', 
@@ -45,62 +49,57 @@ class Fractal:
         for v in self.axiom:
             exec(expl[v])
 
-# class Window(Tk):
-#     def __init__(self, title, geometry):
-#         super().__init__()
-#         self.running = True
-#         self.geometry(geometry)
-#         self.title(title)
-#         self.protocol("WM_DELETE_WINDOW", self.destroy_window)
-#         self.canvas = Canvas(self)
-#         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
-#         self.turtle = tt.RawTurtle(tt.TurtleScreen(self.canvas))
-
-#     def update_window(self):
-#         if self.running:
-#             self.update()
-
-#     def destroy_window(self):
-#         self.running = False
-#         self.destroy()
 
 
-axiom = 'F--F--F'
-rules = [Rule('F', 'F+F--F+F')]
-angle = 60
-level = int(input('level = ')) #suggested level: 5
-length = 4
+# ### star
+# axiom = 'F--F--F'
+# rules = [Rule('F', 'F+F--F+F')]
+# angle = 60
+# level = int(input('level = ')) #suggested level: 5
+# length = 4
 
-fractal = Fractal(axiom, rules, angle)    
-fractal.calculate(level)
-fractal.paint()
-print('finished')
-tt.update()
+# fractal = Fractal(axiom, rules, angle)    
+# fractal.calculate(level)
+# fractal.paint()
+# print('finished')
+# tt.update()
 
-axiom = 'FX'
-rules = [Rule('X', 'X+YF+'), Rule('Y', '-FX-Y')]  #suggested level: 14
-angle = 90
-level = int(input('level = '))
-length = 2
+# ### dragon
+# axiom = 'FX'
+# rules = [Rule('X', 'X+YF+'), Rule('Y', '-FX-Y')]  #suggested level: 14
+# angle = 90
+# level = int(input('level = '))
+# length = 2
 
-fractal = Fractal(axiom, rules, angle)    
-fractal.calculate(level)
-fractal.paint()
-print('finished')
-tt.update()
+# fractal = Fractal(axiom, rules, angle)    
+# fractal.calculate(level)
+# fractal.paint()
+# print('finished')
+# tt.update()
 
-
+### cube
+tt.clearscreen()
 axiom = 'F+F+F+F'
 rules = [Rule('F', 'FF+F+F+F+FF')]
 angle = 90
 level = int(input('level = ')) #suggested level: 5
-length = 2
+length = 3
+angle_range = int(input('angle range = '))
 
-fractal2 = Fractal(axiom, rules, angle)    
-fractal2.calculate(level)
-fractal2.paint()
-print('finished')
-tt.update()
 
+def run_fractal(axiom, rules, angle, level, length, angle_range):
+    delta_color = len(COLORS)/(2*angle_range)
+
+    multiplyier = 5
+    for iangle in range(angle - multiplyier*angle_range, angle + multiplyier*angle_range, multiplyier):
+        fractal = Fractal(axiom, rules, iangle)    
+        fractal.calculate(level)
+        tt.colormode(255)
+        tt.color(COLORS[int(delta_color*(iangle-(angle - multiplyier*angle_range))/multiplyier)])
+        fractal.paint(length)
+        print('finished', iangle)
+        tt.update()
+
+run_fractal(axiom, rules, angle, level, length, angle_range)
 
 tt.done()
