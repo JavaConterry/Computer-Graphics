@@ -1,6 +1,6 @@
 import turtle as tt
 from tkinter import *
-
+import time
 
 COLORS = [(i,i,i) for i in range(0, 250, 10)]
 
@@ -49,6 +49,23 @@ class Fractal:
         for v in self.axiom:
             exec(expl[v])
 
+    def paint_anim(self, length):
+        tt.setpos(20, 20)
+        tt.setheading(90)
+        time.sleep(0.3)
+        tt.clearscreen()
+        tt.tracer(False)
+        tt.speed(0); tt.delay(0)
+        
+        expl = {'F': f'tt.forward({length})', 
+                '+': f'tt.left({self.angle})', 
+                '-': f'tt.right({self.angle})', 
+                'X': f'tt.forward({length})', 
+                'Y': f'tt.forward({length})'}
+        for v in self.axiom:
+            exec(expl[v])
+
+
 
 
 # ### star
@@ -87,19 +104,25 @@ length = 3
 angle_range = int(input('angle range = '))
 
 
-def run_fractal(axiom, rules, angle, level, length, angle_range):
+def run_fractal(axiom, rules, angle, level, length, angle_range, mode='anim'):
+    #modes:
+    # - anim : animated
+    # - simult : all simultaniously
     delta_color = len(COLORS)/(2*angle_range)
 
-    multiplyier = 5
+    multiplyier = 1
     for iangle in range(angle - multiplyier*angle_range, angle + multiplyier*angle_range, multiplyier):
         fractal = Fractal(axiom, rules, iangle)    
         fractal.calculate(level)
         tt.colormode(255)
         tt.color(COLORS[int(delta_color*(iangle-(angle - multiplyier*angle_range))/multiplyier)])
-        fractal.paint(length)
+        if(mode=='anim'):
+            fractal.paint_anim(length)
+        if(mode=='simult'):
+            fractal.paint(length)
         print('finished', iangle)
         tt.update()
 
-run_fractal(axiom, rules, angle, level, length, angle_range)
+run_fractal(axiom, rules, angle, level, length, angle_range, mode='anim')
 
 tt.done()
