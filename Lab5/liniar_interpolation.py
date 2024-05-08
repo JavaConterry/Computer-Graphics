@@ -30,8 +30,8 @@ class Interpolatable_Image:
     
     def liniar_interpolation(self, scale=2):
         new_img = self.__expand(scale)
-        for i in range(0, len(new_img)-1, self.multiply):
-            for j in range(0, len(new_img[0])-1, self.multiply):
+        for i in range(0, len(new_img)-self.multiply, self.multiply):
+            for j in range(0, len(new_img[0])-self.multiply, self.multiply):
                 X1 = j; X2 = j+self.multiply
                 Y1 = i; Y2 = i+self.multiply
                 for y in range(Y1, Y2+1):
@@ -45,5 +45,5 @@ class Interpolatable_Image:
 inter = Interpolatable_Image('img.png')
 
 
-lin_int = inter.liniar_interpolation(scale=2)
+lin_int = inter.liniar_interpolation(scale=4)
 Image.fromarray(lin_int).show()
