@@ -1,6 +1,8 @@
 import numpy as np
 from PIL import Image
-
+import math
+import matplotlib.pyplot as plt
+from scipy.ndimage import zoom
 
 class Interpolatable_Image:
 
@@ -18,7 +20,7 @@ class Interpolatable_Image:
         for i in range(0, self.img_y):
             for j in range(0, self.img_x):
                 new_img[i*self.multiply][j*self.multiply] = self.img[i][j]
-        self.show(new_img)
+        # self.show(new_img)
         return new_img
     
 
@@ -42,8 +44,37 @@ class Interpolatable_Image:
         return new_img
 
 
+    def furie_interpolation(self):
+        new_img = self.img.copy()
+        nx,ny = 100,200
+        x, y = [i for i in range(nx)], [i for i in range(ny)]
+        put_x = 3; put_y = 3
+        X = [0]*nx
+        Y = [0]*ny
+        for i in range(nx):
+            X[i] = i + (i-1)*put_x
+            for j in range(ny):
+                Y[i] = j+(j-1)*put_y
+                new_img[i][j] = math.sin(x[i]/nx*math.pi)*math.cos(2*y[j]/ny*math.pi)+1
+        Y, X = np.meshgrid(Y, X)
+        nx_new = nx+(nx-1)*put_x
+        ny_new = ny+(ny-1)*put_y
+        x_new = [i for i in range(nx_new)]
+        y_new = [i for i in range(ny_new)]
+        y_new, x_new = np.meshgrid(y_new, x_new)
+        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
+        # surf = ax.plot_surface(x_new, y_new,my_image_new, cmap='viridis')
+        # plt.show()
+        
+        return my_image_new
+
 inter = Interpolatable_Image('img.png')
 
 
-lin_int = inter.liniar_interpolation(scale=4)
-Image.fromarray(lin_int).show()
+# lin_int = inter.liniar_interpolation(scale=2)
+# Image.fromarray(lin_int).show()
+
+fur = inter.furie_interpolation()
+Image.fromarray(fur).show()
