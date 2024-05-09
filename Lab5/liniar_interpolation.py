@@ -62,13 +62,11 @@ class Interpolatable_Image:
         x_new = [i for i in range(nx_new)]
         y_new = [i for i in range(ny_new)]
         y_new, x_new = np.meshgrid(y_new, x_new)
-        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111, projection='3d')
-        # surf = ax.plot_surface(x_new, y_new,my_image_new, cmap='viridis')
-        # plt.show()
-        
+        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))        
         return my_image_new
+
+
+
 
 inter = Interpolatable_Image('img.png')
 
@@ -76,5 +74,40 @@ inter = Interpolatable_Image('img.png')
 # lin_int = inter.liniar_interpolation(scale=2)
 # Image.fromarray(lin_int).show()
 
-fur = inter.furie_interpolation()
-Image.fromarray(fur).show()
+# fur = inter.furie_interpolation()
+# Image.fromarray(fur).show()
+
+
+def poly(xs, ys, show=True):
+    ys = np.array(ys).reshape((len(ys), 1))
+    print('ys:', ys)
+    xs_poly = np.array([[x**i for i in range(len(xs)-1, -1, -1)] for x in xs])
+    print('xs_poly:', xs_poly)
+    res_coefs = np.linalg.inv(xs_poly).dot(ys)
+    res_coefs = [val for val in res_coefs.reshape((1, len(res_coefs)))[0]]
+    print('result:', res_coefs)
+
+    #show
+    if(show):
+        def polynomial(x, coef):
+            y = sum(coef * x**i for i, coef in enumerate(coef[::-1]))
+            return y
+
+        freq = 3
+        x_values = np.linspace(min(xs), max(xs), freq*len(xs)) #the predicted values
+        y_values = polynomial(x_values, res_coefs)
+
+        plt.plot(x_values, y_values, label='Polynomial')
+        plt.scatter(xs, ys, color='red', label='Data Points') 
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Polynomial Fit')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+
+x_data = [0, 2, 4, 6]
+y_data = [0, 4, 8, 20]
+
+poly(x_data,y_data)
