@@ -25,20 +25,22 @@ class Interpolatable_Image:
     
 
     def poly(xs, ys, show=False):
+        if(len(xs)>5):
+            print('too big polynom degree')
         ys = np.array(ys).reshape((len(ys), 1))
         xs_poly = np.array([[x**i for i in range(len(xs)-1, -1, -1)] for x in xs])
-        print(xs_poly)
+        # print(xs_poly)
         res_coefs = np.linalg.inv(xs_poly).dot(ys)
         res_coefs = [val for val in res_coefs.reshape((1, len(res_coefs)))[0]]
-        print('result:', res_coefs)
-
+        # print('result:', res_coefs)
+        
         #show
         if(show):
             def polynomial(x, coef):
                 y = sum(coef * x**i for i, coef in enumerate(coef[::-1]))
                 return y
 
-            freq = 3
+            freq = 10
             x_values = np.linspace(min(xs), max(xs), freq*len(xs)) #the predicted values
             y_values = polynomial(x_values, res_coefs)
 
@@ -51,6 +53,7 @@ class Interpolatable_Image:
             plt.grid(True)
             plt.show()
 
+        return res_coefs
 
 
     def show(self, spec=[]):
@@ -72,21 +75,29 @@ class Interpolatable_Image:
                         new_img[y][x] = res
         return new_img
 
-    #fix -> poly function calculates the polynom of the degree 521 which is the size of img
+    ## degree should be less 6
     def poly_interpolation(self, scale=2, degree=4):
         new_img = self.__expand(scale)
-        for i in range(len(new_img)):
-            xs = [j for j in range(0, self.img_x*(scale-1), scale)]
-            ys = self.img[i]
-            coefs = Interpolatable_Image.poly(xs, ys, show=False)
+        for i in range(0, len(new_img)-scale, scale):
+            xs = [k for k in range(0, self.img_x*scale, scale)]# VALUES x FROM ORIGINAL IMG
+            ys = self.img[int(np.floor(i/scale))]# VALUES Y FROM ORIGINAL IMAGE
 
             def polynomial(x, coef):
                 y = sum(coef * x**i for i, coef in enumerate(coef[::-1]))
                 return y
-            
-            x_values = np.linspace(0, len(new_img[i]), 1)
-            y_values = polynomial(x_values, coefs)
-            new_img[i] = y_values
+
+            for j in range(0, len(xs)-degree, degree):
+                # xs_segment = xs[j:j+degree]-np.min(xs[j:j+degree])
+                xs_segment = xs[j:j+degree]
+                ys_segment = ys[j:j+degree]
+                coefs = Interpolatable_Image.poly(xs_segment, ys_segment, show=False)
+
+                x_values = np.linspace(j*scale, j*scale+scale*degree-1, scale*degree)
+                y_values = polynomial(x_values, coefs)
+                new_img[i][j*scale:j*scale+scale*degree] = y_values#
+                # pass
+                
+
         return new_img
 
 
@@ -124,7 +135,7 @@ inter = Interpolatable_Image('img.png')
 # fur = inter.furie_interpolation()
 # Image.fromarray(fur).show()
 
-poly = inter.poly_interpolation(scale=2)
+poly = inter.poly_interpolation(scale=2, degree=3)
 Image.fromarray(poly).show()
 
 
