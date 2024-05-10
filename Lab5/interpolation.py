@@ -94,6 +94,8 @@ class Interpolatable_Image:
 
 
         def fill_horizonal_every_skip(img, step):
+            if(step!=1):
+                step = scale
             for i in range(0, len(img)-step, step):
                 xs = [k for k in range(0, self.img_x*scale, scale)]
                 ys = self.img[int(np.floor(i/scale))]
@@ -112,11 +114,7 @@ class Interpolatable_Image:
         new_img = fill_horizonal_every_skip(new_img, 2)
         self.Transpose()
         new_img = fill_horizonal_every_skip(new_img.T, 1).T
-                
-
-
         return new_img
-
 
 
     def furie_interpolation(self):
@@ -139,6 +137,77 @@ class Interpolatable_Image:
         y_new, x_new = np.meshgrid(y_new, x_new)
         my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))        
         return my_image_new
+    
+
+    def mls(xs_set, ys_set, show=False): # (x1, x2, x3), (y1, y2, y3)
+        xs_2 = sum(x**2 for x in xs_set)
+        # print('\nsum xs_2', xs_2)
+        xs = sum(x for x in xs_set)
+        # print('sum xs', xs)
+        xy = np.array(xs_set).reshape((1, len(xs_set))).dot(np.array(ys_set).reshape((len(ys_set), 1)))[0][0]
+        # print('sum xy', xy)
+        ys = sum(y for y in ys_set)
+        # print('sum ys', ys)
+        A = np.array([[xs_2, xs], [xs, 3]])
+        M = np.array([[xy, ys]]).T
+        coefs = np.linalg.inv(A).dot(M)
+        coefs = [val for val in coefs.reshape((1, len(coefs)))[0]]
+        # print('result:', coefs)
+
+        # show
+        if(show):
+            # line
+            def line(x, a, b):
+                y = x*a + b
+                return y
+
+            x_values = np.linspace(min(xs_set), max(xs_set), 2*len(xs_set))
+            y_values = line(x_values, coefs[0], coefs[1])
+
+            plt.plot(x_values, y_values, label='MLS')
+            plt.scatter(xs_set, ys_set, color='red', label='Data Points') 
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.title('MLS Fit')
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+
+        return coefs
+
+
+    def mls_interpolation(self, scale=2):
+        new_img = self.__expand(scale)
+
+        def line(x, a, b):
+            y = x*a + b
+            return y
+
+        def fill_horizonal_every_skip(img, step):
+            if(step!=1):
+                step=scale
+            for i in range(0, len(img)-step, step):
+                mask = img[i]
+                xs = [k for k in range(0, self.img_x*scale, scale)]
+                ys = self.img[int(np.floor(i/scale))]
+
+                degree = 3
+                for j in range(0, len(xs)-degree, degree):
+                    xs_segment = xs[j:j+degree]
+                    ys_segment = ys[j:j+degree]
+                    coefs = Interpolatable_Image.mls(xs_segment, ys_segment, show=False)
+
+                    x_values = np.linspace(j*scale, j*scale+scale*degree-1, scale*degree)
+                    y_values = line(x_values, coefs[0], coefs[1])
+                    img[i][j*scale:j*scale+scale*degree] = y_values
+                img[i] = [img[i][j] if mask[j] != 0 else mask[j] for j in range(len(img[i]))]
+            return img
+        
+        new_img = fill_horizonal_every_skip(new_img, 2)
+        self.Transpose()
+        new_img = fill_horizonal_every_skip(new_img.T, 1).T
+        return new_img
+
 
 
 
@@ -146,14 +215,17 @@ class Interpolatable_Image:
 inter = Interpolatable_Image('img.png')
 
 
-lin_int = inter.liniar_interpolation(scale=2)
-Image.fromarray(lin_int).show()
+# lin_int = inter.liniar_interpolation(scale=2)
+# Image.fromarray(lin_int).show()
 
-fur = inter.furie_interpolation()
-Image.fromarray(fur).show()
+# fur = inter.furie_interpolation()
+# Image.fromarray(fur).show()
 
-poly = inter.poly_interpolation(scale=2, degree=3)
-Image.fromarray(poly).show()
+# poly = inter.poly_interpolation(scale=2, degree=3)
+# Image.fromarray(poly).show()
+
+mls_int = inter.mls_interpolation(scale=2)
+Image.fromarray(mls_int).show()
 
 
 # x_data = [0, 2, 4, 6]
