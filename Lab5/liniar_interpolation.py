@@ -75,28 +75,45 @@ class Interpolatable_Image:
                         new_img[y][x] = res
         return new_img
 
+
+    def Transpose(self):
+        self.img = self.img.T
+        self.img_x, self.img_y = self.img_y, self.img_x
+
     ## degree should be less 6
     def poly_interpolation(self, scale=2, degree=4):
+        if(degree>5):
+            print('try degree lower')
+            return
         new_img = self.__expand(scale)
-        for i in range(0, len(new_img)-scale, scale):
-            xs = [k for k in range(0, self.img_x*scale, scale)]# VALUES x FROM ORIGINAL IMG
-            ys = self.img[int(np.floor(i/scale))]# VALUES Y FROM ORIGINAL IMAGE
 
-            def polynomial(x, coef):
-                y = sum(coef * x**i for i, coef in enumerate(coef[::-1]))
-                return y
 
-            for j in range(0, len(xs)-degree, degree):
-                # xs_segment = xs[j:j+degree]-np.min(xs[j:j+degree])
-                xs_segment = xs[j:j+degree]
-                ys_segment = ys[j:j+degree]
-                coefs = Interpolatable_Image.poly(xs_segment, ys_segment, show=False)
+        def polynomial(x, coef):
+            y = sum(coef * x**i for i, coef in enumerate(coef[::-1]))
+            return y
 
-                x_values = np.linspace(j*scale, j*scale+scale*degree-1, scale*degree)
-                y_values = polynomial(x_values, coefs)
-                new_img[i][j*scale:j*scale+scale*degree] = y_values#
-                # pass
+
+        def fill_horizonal_every_skip(img, step):
+            for i in range(0, len(img)-step, step):
+                xs = [k for k in range(0, self.img_x*scale, scale)]
+                ys = self.img[int(np.floor(i/scale))]
+
+
+                for j in range(0, len(xs)-degree, degree):
+                    xs_segment = xs[j:j+degree]
+                    ys_segment = ys[j:j+degree]
+                    coefs = Interpolatable_Image.poly(xs_segment, ys_segment, show=False)
+
+                    x_values = np.linspace(j*scale, j*scale+scale*degree-1, scale*degree)
+                    y_values = polynomial(x_values, coefs)
+                    img[i][j*scale:j*scale+scale*degree] = y_values
+            return img
+        
+        new_img = fill_horizonal_every_skip(new_img, 2)
+        self.Transpose()
+        new_img = fill_horizonal_every_skip(new_img.T, 1).T
                 
+
 
         return new_img
 
@@ -104,7 +121,7 @@ class Interpolatable_Image:
 
     def furie_interpolation(self):
         new_img = self.img.copy()
-        nx,ny = 100,200
+        nx,ny = 100,100
         x, y = [i for i in range(nx)], [i for i in range(ny)]
         put_x = 3; put_y = 3
         X = [0]*nx
@@ -129,11 +146,11 @@ class Interpolatable_Image:
 inter = Interpolatable_Image('img.png')
 
 
-# lin_int = inter.liniar_interpolation(scale=2)
-# Image.fromarray(lin_int).show()
+lin_int = inter.liniar_interpolation(scale=2)
+Image.fromarray(lin_int).show()
 
-# fur = inter.furie_interpolation()
-# Image.fromarray(fur).show()
+fur = inter.furie_interpolation()
+Image.fromarray(fur).show()
 
 poly = inter.poly_interpolation(scale=2, degree=3)
 Image.fromarray(poly).show()
