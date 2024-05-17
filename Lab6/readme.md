@@ -1,0 +1,1 @@
+## Inserting a watermark using method of least valuable bit
