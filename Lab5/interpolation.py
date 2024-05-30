@@ -119,15 +119,17 @@ class Interpolatable_Image:
 
     def furie_interpolation(self):
         new_img = self.img.copy()
-        nx,ny = 100,100
+        nx,ny = 200,200
         x, y = [i for i in range(nx)], [i for i in range(ny)]
         put_x = 3; put_y = 3
         X = [0]*nx
         Y = [0]*ny
         for i in range(nx):
             X[i] = i + (i-1)*put_x
+            # X[i] = (i-1)*put_x
             for j in range(ny):
                 Y[i] = j+(j-1)*put_y
+                # Y[i] = (j-1)*put_y
                 new_img[i][j] = math.sin(x[i]/nx*math.pi)*math.cos(2*y[j]/ny*math.pi)+1
         Y, X = np.meshgrid(Y, X)
         nx_new = nx+(nx-1)*put_x
@@ -135,7 +137,7 @@ class Interpolatable_Image:
         x_new = [i for i in range(nx_new)]
         y_new = [i for i in range(ny_new)]
         y_new, x_new = np.meshgrid(y_new, x_new)
-        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))        
+        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))       
         return my_image_new
     
 
@@ -218,14 +220,14 @@ inter = Interpolatable_Image('img.png')
 # lin_int = inter.liniar_interpolation(scale=2)
 # Image.fromarray(lin_int).show()
 
-# fur = inter.furie_interpolation()
-# Image.fromarray(fur).show()
+fur = inter.furie_interpolation()
+Image.fromarray(fur).show()
 
-# poly = inter.poly_interpolation(scale=2, degree=3)
+# poly = inter.poly_interpolation(scale=4, degree=4)
 # Image.fromarray(poly).show()
 
-mls_int = inter.mls_interpolation(scale=2)
-Image.fromarray(mls_int).show()
+# mls_int = inter.mls_interpolation(scale=2)
+# Image.fromarray(mls_int).show()
 
 
 # x_data = [0, 2, 4, 6]
