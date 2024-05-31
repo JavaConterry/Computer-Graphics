@@ -139,7 +139,8 @@ class Interpolatable_Image:
         y_new, x_new = np.meshgrid(y_new, x_new)
         my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))       
         return my_image_new
-    
+
+
 
     def mls(xs_set, ys_set, show=False): # (x1, x2, x3), (y1, y2, y3)
         xs_2 = sum(x**2 for x in xs_set)
