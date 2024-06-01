@@ -1,8 +1,8 @@
 import numpy as np
 from PIL import Image
-import math
 import matplotlib.pyplot as plt
-from scipy.ndimage import zoom
+from scipy.fftpack import fft2, ifft2, fftshift, ifftshift
+
 
 class Interpolatable_Image:
 
@@ -117,28 +117,32 @@ class Interpolatable_Image:
         return new_img
 
 
-    def furie_interpolation(self):
-        new_img = self.img.copy()
-        nx,ny = 200,200
-        x, y = [i for i in range(nx)], [i for i in range(ny)]
-        put_x = 3; put_y = 3
-        X = [0]*nx
-        Y = [0]*ny
-        for i in range(nx):
-            X[i] = i + (i-1)*put_x
-            # X[i] = (i-1)*put_x
-            for j in range(ny):
-                Y[i] = j+(j-1)*put_y
-                # Y[i] = (j-1)*put_y
-                new_img[i][j] = math.sin(x[i]/nx*math.pi)*math.cos(2*y[j]/ny*math.pi)+1
-        Y, X = np.meshgrid(Y, X)
-        nx_new = nx+(nx-1)*put_x
-        ny_new = ny+(ny-1)*put_y
-        x_new = [i for i in range(nx_new)]
-        y_new = [i for i in range(ny_new)]
-        y_new, x_new = np.meshgrid(y_new, x_new)
-        my_image_new = zoom(new_img, (nx_new/new_img.shape[0], ny_new/new_img.shape[1]))       
-        return my_image_new
+    def furie_interpolation(self, scale):
+        image = self.img.copy()
+        orig_shape = image.shape
+        
+        f_transform = fft2(image) # fourie transformed image
+        f_transform_shifted = fftshift(f_transform)
+
+        new_shape = (int(orig_shape[0] * scale), int(orig_shape[1] * scale)) # scaled field for new image
+        new_f_transform_shifted = np.zeros(new_shape, dtype=complex)
+        
+        center_orig = (orig_shape[0] // 2, orig_shape[1] // 2)
+        center_new = (new_shape[0] // 2, new_shape[1] // 2)
+        
+        start_row = center_new[0] - center_orig[0]
+        end_row = start_row + orig_shape[0]
+        start_col = center_new[1] - center_orig[1]
+        end_col = start_col + orig_shape[1]
+        
+        new_f_transform_shifted[start_row:end_row, start_col:end_col] = f_transform_shifted
+        
+        new_f_transform = ifftshift(new_f_transform_shifted)
+        interpolated_image = ifft2(new_f_transform)
+        
+        interpolated_image = np.real(interpolated_image)
+        
+        return interpolated_image
 
 
 
